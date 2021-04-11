@@ -13,5 +13,6 @@ namespace CombFilter {
 		~combFilter();
 
 	private:
+
 	};
 }
