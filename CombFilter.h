@@ -13,6 +13,8 @@ namespace CombFilter {
 		~combFilter();
 
 	private:
-
+		bool initialised_ = false;
+		uint32_t buffer_length_ = 0;
+		uint32_t buffer_index_ = 0;
 	};
 }
