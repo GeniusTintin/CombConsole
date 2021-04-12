@@ -79,13 +79,13 @@ namespace CombFilter {
 					cv::Mat x0_e = cv::Mat::zeros(img_height_, img_width_, CV_64FC1);
 					exp_of_log(x0_e);
 
-					grab_delay(x_d1_, int(d1_ * mtr_), 1);
-					grab_delay(x_d2_, int(d2_ * mtr_), 1);
-					grab_delay(x_d12_, int(d12_ * mtr_), 1);
+					grab_delay(x_d1_, int(d1_), 1);
+					grab_delay(x_d2_, int(d2_), 1);
+					grab_delay(x_d12_, int(d12_), 1);
 
-					grab_delay(y_d1_, int(d1_ * mtr_), 2);
-					grab_delay(y_d2_, int(d2_ * mtr_), 2);
-					grab_delay(y_d12_, int(d12_ * mtr_), 2);
+					grab_delay(y_d1_, int(d1_), 2);
+					grab_delay(y_d2_, int(d2_), 2);
+					grab_delay(y_d12_, int(d12_), 2);
 
 					// calculate new y0_
 					switch (filtering_method_) {
@@ -196,7 +196,7 @@ namespace CombFilter {
 		std::cout << "Filtering method (1:direct integration, 2:comb, 3:improved comb): " << std::endl;
 		std::cin >> filtering_method_;
 
-		d1_ = 1 / base_freq;
+		d1_ = 1 * myReaderPtr_->timeResolution_ / base_freq;
 		d2_ = d1_ / 10;
 		d12_ = d1_ + d2_;
 
@@ -218,12 +218,12 @@ namespace CombFilter {
 		// minimum time resolution
 		mtr_ = 1e5; // NOTE: this should be 1e-5, but due to the accuracy of the floating point number we use positive index here!
 		t_next_store_ = 0.0;
-		buffer_length_ = int(d12_ * mtr_ + 1);
+		buffer_length_ = int(d12_ * mtr_ / myReaderPtr_->timeResolution_ + 1);
 		buffer_index_ = 0;
 
 		// FIXME: validate that the buffer size is correctly constructed
-		std::cout << "tao1:" << d1_ << " tao2:" << d2_ << " tao12:" << d12_ << std::endl;
-		std::cout << 1 / mtr_ << std::endl;
+		std::cout << "tao1:" << d1_ / myReaderPtr_->timeResolution_ << " tao2:" << d2_ / myReaderPtr_->timeResolution_ << " tao12:" << d12_ / myReaderPtr_->timeResolution_ << std::endl;
+		std::cout << "mtr_ = " << 1 / mtr_ << std::endl;
 		std::cout << "Buffer length:" << buffer_length_ << std::endl;
 		wait_on_enter();
 
@@ -263,9 +263,10 @@ namespace CombFilter {
 		// after storing, the index is pointing to the next store location
 	}
 
-	void combFilter::grab_delay(cv::Mat& sel, const int i1, const int which_buffer) {
+	void combFilter::grab_delay(cv::Mat& sel, const int delay, const int which_buffer) {
 
-		int index = buffer_index_ - i1;
+		int index_offset = delay * mtr_ / myReaderPtr_->timeResolution_;
+		int index = buffer_index_ - index_offset;
 
 		if (index < 0) {
 			index = buffer_length_ + index;

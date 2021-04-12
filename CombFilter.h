@@ -24,7 +24,7 @@ namespace CombFilter {
 		void initialise_buffer(const uint32_t& rows, const uint32_t& columns);
 		void integral_tracking(const int x, const int y, const bool polarity);
 		void store2buffer(const cv::Mat& figx, const cv::Mat& figy);
-		void grab_delay(cv::Mat& sel, const int i1, const int which_buffer);
+		void grab_delay(cv::Mat& sel, const int delay, const int which_buffer);
 		void exp_of_log(cv::Mat& converted_image);
 		void user_size_input();
 		inline void wait_on_enter();
