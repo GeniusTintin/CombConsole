@@ -22,7 +22,13 @@ namespace CombFilter {
 		
 		FileReader::fileReader myReader;
 		uint64_t title;
-		myReader.readOneLine();
+		bool iseof = false;
+		myReader.readOneLine(iseof);
+		if (iseof) {
+			std::cout << "ERROR: Void package." << std::endl;
+			return;
+		}
+
 		myReader.getValue(title, 3);
 
 		if (title >= 2) {
@@ -43,7 +49,123 @@ namespace CombFilter {
 			initialise_image_states(img_height_, img_width_);
 		}
 
-		 
+		while (!iseof) {
+			
+			myReader.readOneLine(iseof);
+
+			// declear variable
+			uint64_t x = 0;
+			uint64_t y = 0;
+			uint64_t polarity = 0;
+			uint64_t ts = 0;
+
+			myReader.getValue(x, 1);
+			myReader.getValue(y, 2);
+
+			if (x >= 0 && x < img_width_ && y >= 0 && y < img_height_) {
+				
+				myReader.getValue(ts, 0);
+				myReader.getValue(polarity, 3);
+
+				// integral tracking
+				integral_tracking(x, y, polarity);
+
+				// grab delay and calculate y0_
+				while (ts >= t_next_store_) {
+					if (t_next_store_ == 0) {
+						t_next_store_ = ts;
+					}
+
+					cv::Mat x0_e = cv::Mat::zeros(img_height_, img_width_, CV_64FC1);
+					exp_of_log(x0_e);
+
+					grab_delay(x_d1_, int(d1_ * mtr_), 1);
+					grab_delay(x_d2_, int(d2_ * mtr_), 1);
+					grab_delay(x_d12_, int(d12_ * mtr_), 1);
+
+					grab_delay(y_d1_, int(d1_ * mtr_), 2);
+					grab_delay(y_d2_, int(d2_ * mtr_), 2);
+					grab_delay(y_d12_, int(d12_ * mtr_), 2);
+
+					// calculate new y0_
+					switch (filtering_method_) {
+					case 1: {
+						y0_ = x0_e; // direct integration
+						break;
+					}
+					case 2: {
+						y0_ = x0_e - x_d1_; // simple version of comb (no dc)
+						break;
+					}
+					default: {
+						y0_ = x0_e - x_d1_ - rho2_ * x_d2_ + rho2_ * x_d12_ + rho1_ * y_d1_ + y_d2_ - rho1_ * y_d12_;
+					}
+					}
+					// FIXME:
+						// std::cout << ts << std::endl;
+						// if(ts >= 4.48){
+						//     std::string message = "time: ";
+						//     message += std::to_string(ts);
+						//     message += ", value at (10,10): ";
+						//     message += std::to_string(y0_.at<double>(10,10));
+						//     message += ", value at (20,20): ";
+						//     message += std::to_string(y0_.at<double>(20,20));
+						//     write_log("log.txt", message);
+						// }
+
+					/*
+					if (ts >= 4.47 && (y0_.at<double>(10, 10) > 0.59 || y0_.at<double>(10, 10) < 0.45)) {
+						std::cout << ts << std::endl;
+						// std::cout << y0_ << std::endl;
+						std::string message = "time: ";
+						message += std::to_string(ts);
+						message += "value at (10,10): ";
+						message += std::to_string(y0_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "y_d1_: ";
+						message += std::to_string(y_d1_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "y_d2_: ";
+						message += std::to_string(y_d2_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "y_d12_: ";
+						message += std::to_string(y_d12_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "x_d1_: ";
+						message += std::to_string(x_d1_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "x_d2_: ";
+						message += std::to_string(x_d2_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "x_d12_: ";
+						message += std::to_string(x_d12_.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						message = "x0_e: ";
+						message += std::to_string(x0_e.at<double>(10, 10));
+						write_log("delay_value.txt", message);
+
+						wait_on_enter();
+					}
+					*/
+					store2buffer(x0_e, y0_);
+					t_next_store_ += myReader.timeResolution_ / mtr_;
+
+
+					if (publish_framerate_ > 0 && ts >= t_next_publish_) {
+
+						publish_intensity_estimate();
+						t_next_publish_ = ts + myReader.timeResolution_ / publish_framerate_;
+					}
+				}
+			}
+		}
 	}
 
 	void combFilter::initialise_image_states(const uint32_t& rows, const uint32_t& columns) {
@@ -81,6 +203,8 @@ namespace CombFilter {
 		// delay gain
 		rho1_ = 0.9;
 		rho2_ = 0.99;
+
+		cv::namedWindow(window_name_, cv::WINDOW_AUTOSIZE);
 
 		initialise_buffer(rows, columns);
 
@@ -164,6 +288,14 @@ namespace CombFilter {
 		converted_image += LOG_INTENSITY_OFFSET;
 		cv::exp(converted_image, converted_image);
 		converted_image -= 1;
+	}
+
+	void combFilter::publish_intensity_estimate() {
+
+		cv::Mat display_image;
+		y0_.convertTo(display_image, CV_8UC1, 255.0);
+		cv::imshow(window_name_, display_image);
+		cv::waitKey(1);
 	}
 
 	void combFilter::user_size_input() {

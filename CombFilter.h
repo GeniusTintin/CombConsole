@@ -15,7 +15,6 @@ namespace CombFilter {
 
 		combFilter();
 		virtual ~combFilter();
-		void set_parameters();
 		void eventsCallback();
 
 	private:
@@ -29,6 +28,7 @@ namespace CombFilter {
 		void user_size_input();
 		inline void wait_on_enter();
 		void write_log(std::string filename, std::string content);
+		void publish_intensity_estimate();
 
 		bool initialised_ = false;
 		int filtering_method_ = 0;
@@ -41,18 +41,19 @@ namespace CombFilter {
 
 		uint64_t img_height_ = 0;
 		uint64_t img_width_ = 0;
+		std::string window_name_ = "My Image Window";
 
 		// delayed integrated events
-		cv::Mat x0_ = cv::Mat(1,1,CV_64FC1,0);
-		cv::Mat x_d1_ = cv::Mat(1, 1, CV_64FC1, 0);
-		cv::Mat x_d2_ = cv::Mat(1, 1, CV_64FC1, 0);
-		cv::Mat x_d12_ = cv::Mat(1, 1, CV_64FC1, 0);
+		cv::Mat x0_ = cv::Mat::zeros(1,1,CV_64FC1);
+		cv::Mat x_d1_ = cv::Mat::zeros(1, 1, CV_64FC1);
+		cv::Mat x_d2_ = cv::Mat::zeros(1, 1, CV_64FC1);
+		cv::Mat x_d12_ = cv::Mat::zeros(1, 1, CV_64FC1);
 
 		// delayed output
-		cv::Mat y0_ = cv::Mat(1, 1, CV_64FC1, 0);
-		cv::Mat y_d1_ = cv::Mat(1, 1, CV_64FC1, 0);
-		cv::Mat y_d2_ = cv::Mat(1, 1, CV_64FC1, 0);
-		cv::Mat y_d12_ = cv::Mat(1, 1, CV_64FC1, 0);
+		cv::Mat y0_ = cv::Mat::zeros(1, 1, CV_64FC1);
+		cv::Mat y_d1_ = cv::Mat::zeros(1, 1, CV_64FC1);
+		cv::Mat y_d2_ = cv::Mat::zeros(1, 1, CV_64FC1);
+		cv::Mat y_d12_ = cv::Mat::zeros(1, 1, CV_64FC1);
 
 		// user defined size
 		bool user_defined_size_ = false;
@@ -73,7 +74,7 @@ namespace CombFilter {
 		double t_next_store_ = 0.0;
 
 		// publish parameters
-		double publish_framerate_ = 1e4;
+		double publish_framerate_ = 1e3;
 		double t_next_publish_ = 0.0;
 		
 		// cutoff frequency

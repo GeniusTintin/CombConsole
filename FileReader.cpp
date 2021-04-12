@@ -30,16 +30,21 @@ namespace FileReader {
         fileInitialised_ = false;
     }
 
-    void fileReader::readOneLine() {
+    void fileReader::readOneLine(bool& iseof) {
 
         if (!fileInitialised_) {
             std::string fullPath = path_ + fileName_;
             initialiseFile(fullPath);
         }
 
+        if (myFile_.eof()) {
+            iseof = true;
+        }
+
         std::string str;
         std::getline(myFile_, str);
         getNumber(myNumber_, str);
+        
 
     }
 

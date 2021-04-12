@@ -8,6 +8,9 @@
 int main()
 {
     CombFilter::combFilter myCombFilter;
+    
+    myCombFilter.eventsCallback();
 
+    return 0;
 
 }
