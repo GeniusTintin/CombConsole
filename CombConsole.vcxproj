@@ -144,9 +144,11 @@
   <ItemGroup>
     <ClCompile Include="CombConsole.cpp" />
     <ClCompile Include="CombFilter.cpp" />
+    <ClCompile Include="FileReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CombFilter.h" />
+    <ClInclude Include="FileReader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
