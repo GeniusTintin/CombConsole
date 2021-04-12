@@ -12,5 +12,4 @@ int main()
     myCombFilter.eventsCallback();
 
     return 0;
-
 }
