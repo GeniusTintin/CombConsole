@@ -1,6 +1,5 @@
 #define _USE_MATH_DEFINES
 #include "CombFilter.h"
-#include "FileReader.h"
 #include <iostream>
 #include <cmath>
 
@@ -8,7 +7,8 @@ namespace CombFilter {
 
 	combFilter::combFilter() {
 
-		
+		static FileReader::fileReader eventReader;
+		myReaderPtr_ = &eventReader;
 	}
 
 	combFilter::~combFilter() {
@@ -20,21 +20,21 @@ namespace CombFilter {
 
 	void combFilter::eventsCallback() {
 		
-		FileReader::fileReader myReader;
+		//FileReader::fileReader myReader;
 		uint64_t title;
 		bool iseof = false;
-		myReader.readOneLine(iseof);
+		myReaderPtr_->readOneLine(iseof);
 		if (iseof) {
 			std::cout << "ERROR: Void package." << std::endl;
 			return;
 		}
 
-		myReader.getValue(title, 3);
+		myReaderPtr_->getValue(title, 3);
 
 		if (title >= 2) {
 
-			myReader.getValue(img_height_, 1);
-			myReader.getValue(img_width_, 2);
+			myReaderPtr_->getValue(img_height_, 1);
+			myReaderPtr_->getValue(img_width_, 2);
 		}
 		else{
 
@@ -51,7 +51,7 @@ namespace CombFilter {
 
 		while (!iseof) {
 			
-			myReader.readOneLine(iseof);
+			myReaderPtr_->readOneLine(iseof);
 
 			// declear variable
 			uint64_t x = 0;
@@ -59,13 +59,13 @@ namespace CombFilter {
 			uint64_t polarity = 0;
 			uint64_t ts = 0;
 
-			myReader.getValue(x, 1);
-			myReader.getValue(y, 2);
+			myReaderPtr_->getValue(x, 1);
+			myReaderPtr_->getValue(y, 2);
 
 			if (x >= 0 && x < img_width_ && y >= 0 && y < img_height_) {
 				
-				myReader.getValue(ts, 0);
-				myReader.getValue(polarity, 3);
+				myReaderPtr_->getValue(ts, 0);
+				myReaderPtr_->getValue(polarity, 3);
 
 				// integral tracking
 				integral_tracking(x, y, polarity);
@@ -155,13 +155,13 @@ namespace CombFilter {
 					}
 					*/
 					store2buffer(x0_e, y0_);
-					t_next_store_ += myReader.timeResolution_ / mtr_;
+					t_next_store_ += myReaderPtr_->timeResolution_ / mtr_;
 
 
 					if (publish_framerate_ > 0 && ts >= t_next_publish_) {
 
 						publish_intensity_estimate();
-						t_next_publish_ = ts + myReader.timeResolution_ / publish_framerate_;
+						t_next_publish_ = ts + myReaderPtr_->timeResolution_ / publish_framerate_;
 					}
 				}
 			}
@@ -204,7 +204,7 @@ namespace CombFilter {
 		rho1_ = 0.9;
 		rho2_ = 0.99;
 
-		cv::namedWindow(window_name_, cv::WINDOW_AUTOSIZE);
+		cv::namedWindow(window_name_, cv::WINDOW_NORMAL);
 
 		initialise_buffer(rows, columns);
 
@@ -324,3 +324,5 @@ namespace CombFilter {
 		file2write << content << std::endl;
 	}
 }
+
+// Dingran Yuan

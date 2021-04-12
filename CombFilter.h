@@ -1,4 +1,5 @@
 #pragma once
+#include "FileReader.h"
 #include <string>
 #include <stdio.h>
 #include <fstream>
@@ -29,6 +30,8 @@ namespace CombFilter {
 		inline void wait_on_enter();
 		void write_log(std::string filename, std::string content);
 		void publish_intensity_estimate();
+
+		FileReader::fileReader* myReaderPtr_;
 
 		bool initialised_ = false;
 		int filtering_method_ = 0;
