@@ -42,8 +42,8 @@ namespace CombFilter {
 		uint32_t buffer_length_ = 0;
 		uint32_t buffer_index_ = 0;
 
-		uint64_t img_height_ = 0;
-		uint64_t img_width_ = 0;
+		uint32_t img_height_ = 0;
+		uint32_t img_width_ = 0;
 		std::string window_name_ = "My Image Window";
 
 		// delayed integrated events

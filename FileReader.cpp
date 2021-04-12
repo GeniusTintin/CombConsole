@@ -4,6 +4,7 @@ namespace FileReader {
 
     fileReader::fileReader() {
         
+        eData_ = { 0,0,0,0 };
         int userPath;
         std::cout << "Whether user input path? (0: Default path, 1: User input path)" << std::endl;
         std::cin >> userPath;
@@ -43,20 +44,9 @@ namespace FileReader {
 
         std::string str;
         std::getline(myFile_, str);
-        getNumber(myNumber_, str);
+        getNumber(str);
         
 
-    }
-
-    void fileReader::getValue(uint64_t& return_value, int i) {
-        // get value from myNumber_
-        // [0,1,2,3]: [ts, x, y, polarity]
-        if (i == 0) {
-            return_value = uint64_t(timeResolution_ * myNumber_[i]);
-        }
-        else {
-            return_value = uint64_t(myNumber_[i]);
-        }
     }
 
     void fileReader::initialiseFile(std::string fullPath) {
@@ -66,7 +56,7 @@ namespace FileReader {
         fileInitialised_ = true;
     }
 
-    void fileReader::getNumber(double* numArray, std::string str) {
+    void fileReader::getNumber_Legacy(double* numArray, std::string str) {
 
         std::string word;
         int i = 0;
@@ -81,5 +71,40 @@ namespace FileReader {
             }
         }
         numArray[i] = atof(word.c_str());
+
+    }
+
+    void fileReader::getNumber(std::string str) {
+
+        std::string word;
+        int i = 0;
+        for (auto x : str) {
+            if (x == ' ') {
+                switch (i) {
+                case 0: {
+                    eData_.ts = uint64_t(timeResolution_ * atof(word.c_str()));
+                    break;
+                }
+                case 1: {
+                    eData_.x = std::stoi(word);
+                    break;
+                }
+                case 2: {
+                    eData_.y = std::stoi(word);
+                    break;
+                }
+                default: {
+                    eData_.polarity = std::stoi(word);
+                    break;
+                }   
+                }
+                word = "";
+                i++;
+            }
+            else {
+                word = word + x;
+                eData_.polarity = std::stoi(word);
+            }
+        }
     }
 }

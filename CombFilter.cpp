@@ -21,7 +21,8 @@ namespace CombFilter {
 	void combFilter::eventsCallback() {
 		
 		//FileReader::fileReader myReader;
-		uint64_t title;
+		// the first line of the dataset is designed to be the image information state
+		
 		bool iseof = false;
 		myReaderPtr_->readOneLine(iseof);
 		if (iseof) {
@@ -29,12 +30,12 @@ namespace CombFilter {
 			return;
 		}
 
-		myReaderPtr_->getValue(title, 3);
+		uint8_t title = myReaderPtr_->eData_.polarity;
 
 		if (title >= 2) {
 
-			myReaderPtr_->getValue(img_height_, 1);
-			myReaderPtr_->getValue(img_width_, 2);
+			img_height_ = myReaderPtr_->eData_.y;
+			img_width_ = myReaderPtr_->eData_.x;
 		}
 		else{
 
@@ -54,18 +55,13 @@ namespace CombFilter {
 			myReaderPtr_->readOneLine(iseof);
 
 			// declear variable
-			uint64_t x = 0;
-			uint64_t y = 0;
-			uint64_t polarity = 0;
-			uint64_t ts = 0;
-
-			myReaderPtr_->getValue(x, 1);
-			myReaderPtr_->getValue(y, 2);
+			uint32_t x = myReaderPtr_->eData_.x;
+			uint32_t y = myReaderPtr_->eData_.y;
 
 			if (x >= 0 && x < img_width_ && y >= 0 && y < img_height_) {
 				
-				myReaderPtr_->getValue(ts, 0);
-				myReaderPtr_->getValue(polarity, 3);
+				uint64_t ts = myReaderPtr_->eData_.ts;
+				uint8_t polarity = myReaderPtr_->eData_.polarity;
 
 				// integral tracking
 				integral_tracking(x, y, polarity);
