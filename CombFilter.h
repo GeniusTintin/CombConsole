@@ -2,6 +2,7 @@
 #include <string>
 #include <stdio.h>
 #include <fstream>
+#include <cstdlib>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -15,7 +16,7 @@ namespace CombFilter {
 		combFilter();
 		virtual ~combFilter();
 		void set_parameters();
-		void eventsCallback(std::string filename);
+		void eventsCallback();
 
 	private:
 
@@ -30,12 +31,16 @@ namespace CombFilter {
 		void write_log(std::string filename, std::string content);
 
 		bool initialised_ = false;
+		int filtering_method_ = 0;
 		
 		// ring buffer
 		cv::Mat* ring_buffer1_ = nullptr;
 		cv::Mat* ring_buffer2_ = nullptr;
 		uint32_t buffer_length_ = 0;
 		uint32_t buffer_index_ = 0;
+
+		uint64_t img_height_ = 0;
+		uint64_t img_width_ = 0;
 
 		// delayed integrated events
 		cv::Mat x0_ = cv::Mat(1,1,CV_64FC1,0);
