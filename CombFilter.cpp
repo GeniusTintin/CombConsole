@@ -63,9 +63,6 @@ namespace CombFilter {
 				uint64_t ts = myReaderPtr_->eData_.ts;
 				uint8_t polarity = myReaderPtr_->eData_.polarity;
 
-				// integral tracking
-				integral_tracking(x, y, polarity);
-
 				// grab delay and calculate y0_
 				while (ts >= t_next_store_) {
 					if (t_next_store_ == 0) {
@@ -160,6 +157,8 @@ namespace CombFilter {
 						t_next_publish_ = ts + myReaderPtr_->timeResolution_ / publish_framerate_;
 					}
 				}
+				// integral tracking
+				integral_tracking(x, y, polarity);
 			}
 		}
 	}
